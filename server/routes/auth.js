@@ -3,18 +3,28 @@ const authRouter = express.Router();
 const models =  require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mailer = require('../utils/mailer');
 require('dotenv').config({path: '.variables.env'});
 
 
 
 function createUser(body, res) {
-    console.log("Body", JSON.stringify(body, null, 3));
     models.User.create(body)
         .then(user => {
-            return res.status(201).json({
-                message: `successfully registered ${user.username}`,
+            const verificationBody = {
+                user: user.username, email: user.email
+            }
+            const hash = bcrypt.hashSync(JSON.stringify(verificationBody), 10);
+            const link = `${process.env.BASE_URL}/api/verifyemail?email=${user.email}&hash=${hash}`;
+            return mailer(user.email, link).then(response => {
+                res.status(201).json({
+                    message: `successfully registered ${user.username}, please check you email`,
+                });
+            }).catch(err => {
+                throw new Error(err);
             });
-        }).catch(err => {
+        })
+        .catch(err => {
             return res.status(401).json({
                 message: err
             });
@@ -58,7 +68,6 @@ authRouter.route('/register')
             });
         } else {
             const passwordHash = await bcrypt.hash(password, 10);
-            console.log("Password hash", passwordHash);
             const requestBody = {
                 firstName, lastName, email, username, password: passwordHash, categories, languages, countries, active: false
             }
