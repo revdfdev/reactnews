@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 
 
 function pushMainRouter(req, res) {
-    models.User.findOne({
+    models.Users.findOne({
         where: {
             email: req.query.email
         }

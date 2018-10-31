@@ -29,8 +29,19 @@ module.exports = function sendmail(emailTo, link) {
         from: from,
         to: emailTo,
         subject: 'Merkmod news email verification',
-        text: `Please verify your email visit this link ${link}`,
-        //html: `<a href=\"${link}"\>Verify</a>`
+        //text: `Please verify your email visit this link ${link}`,
+        html: `<html>
+                    <head>Merkmod news api</head>
+                    <body>
+                        <h1>You are just one step away</h1>
+                        <p>
+                            please click the link below get started.
+
+
+                            ${link}
+                        </p>
+                    </body>
+                </html>`
     }
     return new Promise((resolve, reject) => {
         smtpTransport.sendMail(mail, function(error, response) {
